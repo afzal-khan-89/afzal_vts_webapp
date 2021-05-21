@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  {{ template "header" .}}
+  <body>
+    {{ template "navbar" .}}
+    <div id="site_content">
+      <div id="content">
+        <div>
+          <img src="/assets/img/vts_img.png" width="100.5%" />
+          </div>
+        <div class="search_element_container">
+          <div style="float: left; width: 50%; padding: 10px; border-right: 1px green solid;">
+              <form action="/login" method="post">
+                  <div class="form_settings">
+                      <p><span>User Name:</span><input type="text" name="user_name" value="" /><?php echo form_error('user_name', '<font style="color: red; padding-left: 10px;">', '</font>');?></p>
+                      <p><span>User Pass:</span><input type="password" name="password" value="" /><?php echo form_error('password', '<font style="color: red; padding-left: 10px;">', '</font>');?></p>
+                      <p style="padding-top: 15px"><span id="empty_span">&nbsp;</span><input class="submit" type="submit" name="btnSubmit" value="submit" /></p>
+                  </div>
+                  <div><a style="font-weight: bold; text-decoration: none;" href="users/forget_password">Forget Password?</a></div>
+                  <input type="hidden" name="loginForm" value="1" />
+              </form>
+          </div>
+          <div style="float: left; padding: 10px; width: 45%; text-align: justify;">
+              <span style="font-weight: bold;">Technology on the move</span><br /><br />
+              Using the GEON vehicle tracking system you can track your vehicles in real-time, anytime, from anywhere. There is no need for control stations, proprietary software, as everything is accessed over the internet. Our system uses GPS satellites to locate your vehicles, and GPRS technology to ensure that their positions and vehicle log data are constantly updated.
+          </div>
+          <div style="clear: both;"></div>
+      </div>
+      </div>
+    </div>
+    <div id="footer">
+      Copyright &copy; GEON Technologies Ltd.
+    </div>
+  </body>
+</html>

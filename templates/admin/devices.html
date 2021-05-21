@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  {{ template "header" .}}
+  <body>
+    {{ template "navbar" .}}
+    <button onclick="document.location='/newdevice'">Add Device</button>
+    <table>
+            <tr>
+                <th>Imei</th>
+                <th>Manufacturer</th>
+                <th>Model</th>
+            </tr>
+            {{range .}}
+            <tr>
+                    <td>
+                        <p>{{.Imei}}</p>
+                    </td>
+                    <td>
+                        <p>{{.Manufacturer}}</p>
+                    </td>
+                    <td> 
+                        <p>{{.DeviceModel}}</p>
+                    </td>
+            </tr>
+            {{end}}
+    </table>
+    {{ template "footer" .}}
+  </body>
+</html>

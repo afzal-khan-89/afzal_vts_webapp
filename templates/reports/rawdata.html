@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test struct ...</title>
+    <style> 
+        table { 
+            border: 1px;
+            margin-left: auto; 
+            margin-right: auto; 
+            width: 75%; 
+            table-layout:fixed; 
+        } 
+        th{
+            font-size: 14px;
+        }
+  
+        td { 
+            border: 1px solid black; 
+            text-align: center; 
+            font-size: 12px;
+            padding: 0px;
+            margin: 0px;
+        }
+        tr{
+            height: 14px;
+            padding: 0px;
+            margin: 0px;
+        }
+    </style> 
+  </head>
+  <body>
+    <h1>Skills</h1>
+
+    <table>
+            <tr>
+                <th>Imei</th>
+                <th>Time</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Speed</th>
+                <th>Status</th>
+            </tr>
+            {{range .}}
+            <tr>
+                    <td>
+                        <p>{{.Imei}}</p>
+                    </td>
+                    <td>
+                        <p>{{.Dtime}}</p>
+                    </td>
+                    <td> 
+                        <p>{{.Latitude}}</p>
+                    </td>
+                    <td>
+                        <p>{{.Longitude}}</p>
+                    </td>
+                    <td>
+                        <p>{{.Speed}}</p>
+                    </td>
+                    <td>
+                        <p>{{.Status}}</p>
+                    </td>
+            </tr>
+            {{end}}
+    </table>
+
+    <p><a href="localhost:8080/adduser">adduser</a></p>
+  </body>
+</html>

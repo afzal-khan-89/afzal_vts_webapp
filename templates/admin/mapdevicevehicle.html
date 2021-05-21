@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  {{ template "header" .}}
+  <body>
+    <div class="testbox">
+      <form method="POST">
+        <div class="banner">
+          <h1>Map Device</h1>
+        </div>
+        <div class="item">
+          <p>Name</p>
+          <div class="name-item">
+            <select name="vehicle" size="1" id="action-choice">
+                <option value="">Select Vehicle</option>
+                <option value="test">Test</option>
+            </select>
+            <select name="deviceImei" size="1" id="action-choice">
+                <option value="">Select Device</option>
+                <option value="test">Test</option>
+            </select>
+            <input type="text" name="owner" placeholder="Owner" />
+            <input type="text" name="status" placeholder="Status" />
+            <input type="text" name="warrantyStart" placeholder="Warranty Start" />
+            <input type="text" name="warrantyPeriod" placeholder="Warranty Period" />
+            <input type="text" name="warrantyEnd" placeholder="Warranty End" />
+          </div>
+        </div>
+        <div class="btn-block">
+          <button type="submit">SUBMIT</button>
+        </div>
+      </form>
+    </div>
+  </body>
+  {{ template "footer" .}}
+  </body>
+</html>

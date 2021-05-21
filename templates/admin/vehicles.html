@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test struct ...</title>
+    <style> 
+        table { 
+            border: 1px;
+            margin-left: auto; 
+            margin-right: auto; 
+            width: 75%; 
+            table-layout:fixed; 
+        } 
+        th{
+            font-size: 14px;
+        }
+  
+        td { 
+            border: 1px solid black; 
+            text-align: center; 
+            font-size: 12px;
+            padding: 0px;
+            margin: 0px;
+        }
+        tr{
+            height: 14px;
+            padding: 0px;
+            margin: 0px;
+        }
+    </style> 
+  </head>
+  <body>
+    <button onclick="document.location='/addvehicle'">Add Vehicles</button>
+    <table>
+            <tr>
+                <th>Number plate</th>
+                <th>Engine no</th>
+                <th>Chassise no</th>
+                <th>Type</th>
+                <th>Model</th>
+                <th>Owner</th>
+            </tr>
+            {{range .}}
+            <tr>
+                    <td>
+                        <p>{{.NumberPlate}}</p>
+                    </td>
+                    <td>
+                        <p>{{.EngineNo}}</p>
+                    </td>
+                    <td> 
+                        <p>{{.ChassiseNo}}</p>
+                    </td>
+                    <td>
+                        <p>{{.VehicleType}}</p>
+                    </td>
+                    <td>
+                        <p>{{.VehicleModel}}</p>
+                    </td>
+                    <td>
+                        <p>{{.VehicleOwner}}</p>
+                    </td>
+            </tr>
+            {{end}}
+    </table>
+  </body>
+</html>

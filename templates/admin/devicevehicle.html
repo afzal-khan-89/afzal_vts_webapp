@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  {{ template "header" .}}
+  <body>
+    {{ template "navbar" .}}
+    <button onclick="document.location='/mapdevicevehicle'">Add Device</button>
+    <table>
+            <tr>
+                <th>Vehicle</th>
+                <th>Device</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Warrantystart</th>
+                <th>Warrantyperiod</th>
+                <th>WarrantyEnd</th>
+            </tr>
+            {{range .}}
+            <tr>
+                <td>
+                   <p>{{.Vehicle}}</p>
+                </td>
+                <td>
+                    <p>{{.Device}}</p>
+                </td>
+                <td> 
+                     <p>{{.Owner}}</p>
+                </td>
+                <td>
+                    <p>{{.Status}}</p>
+                </td>
+                <td>
+                    <p>{{.Warrantystart}}</p>
+                </td>
+                <td> 
+                    <p>{{.Warrantyperiod}}</p>
+                </td>
+                <td>
+                    <p>{{.WarrantyEnd}}</p>
+                </td>
+            </tr>
+            {{end}}
+    </table>
+    {{ template "footer" .}}
+  </body>
+</html>

@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+  {{ template "header" .}}
+ 
+  <body>
+    {{ template "navbar" .}}
+    <script>
+
+        var loginUserType = 'userType';
+        var timer;
+        //for date picker
+        $(document).ready(function() {
+            alert("this should work ")
+            $('.date_picker').datetimepicker({
+                dateFormat: 'yy-mm-dd',
+                timeFormat: 'HH:mm:ss',
+                stepHour: 1,
+                stepMinute: 1,
+                stepSecond: 1
+            });
+    
+            $('.only_date_picker').datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
+    
+            $('#consortium_id').change(function() {
+                var consortiumId = $('#consortium_id').val();
+                var dealerId = $('#dealer_id').val();
+                jQuery.ajax({
+                    url: 'home/loadActiveDealer',
+                    type: "POST",
+                    data: {consortiumId:consortiumId},
+                    beforeSend: function(){
+                        contentLoader = new ajaxLoader($('#select_vehicle'));
+                    },
+                    success: function(response) {
+                        $('#dealer_id').html(response);
+                        contentLoader.remove();
+                    }
+                });
+                jQuery.ajax({
+                    url: 'home/loadActiveClient',
+                    type: "POST",
+                    data: {consortiumId:consortiumId, dealerId:dealerId},
+                    beforeSend: function(){
+                        contentLoader = new ajaxLoader($('#select_vehicle'));
+                    },
+                    success: function(response) {
+                        $('#vehicle_owner_id').html(response);
+                        contentLoader.remove();
+                    }
+                });
+            });
+    
+            $('#dealer_id').change(function() {
+                var consortiumId = '';
+                var dealerId = '';
+
+                // <?php if($this->session->userdata('userType') == 'SADMIN') { ?>
+                //     consortiumId = $('#consortium_id').val();
+                //     dealerId = $('#dealer_id').val();
+                // <?php } ?>                
+                // <?php if($this->session->userdata('userType') == 'ADMIN' || $this->session->userdata('userType') == 'SEMI_ADMIN') { ?>
+                //     dealerId = $('#dealer_id').val();
+                // <?php } ?>
+
+
+                jQuery.ajax({
+                    url: 'home/loadActiveClient',
+                    type: "POST",
+                    data: {consortiumId:consortiumId, dealerId:dealerId},
+                    beforeSend: function(){
+                        contentLoader = new ajaxLoader($('#select_vehicle'));
+                    },
+                    success: function(response) {
+                        $('#vehicle_owner_id').html(response);
+                        contentLoader.remove();
+                    }
+                });
+            });
+            
+            $('#row-filer').change(function(){
+                clearInterval(timer);
+                var rowFilter = parseInt($('#row-filer').val());
+                if(rowFilter == 0){
+                    $('.vts-row').show();
+                } else {
+                    $('.vts-row').hide();
+                    var vc = 0;
+                    $('.vts-row').each(function(){
+                        if(vc % rowFilter == 0 ){
+                            $(this).show();
+                        }
+                        vc++;
+                    });
+                    $('#tbl-speed-location-distance tr:last').show();
+                }
+            });
+    
+            $('#btnPrint').click(function(){
+                $.print('.print_content');
+            });
+            
+            var specialElementHandlers = {
+                '#bypassme': function (element,renderer) {
+                    return true;
+                }
+            };
+            
+            $('#btnPdf').click(function () {
+                var fileContent = $('#pdf-content').html();
+                var fileName = $('#report_type').val();
+                margins = {
+                    top: 30,
+                    bottom: 30,
+                    left: 20,
+                    width: 1024
+                };         
+                var pdf = new jsPDF('p', 'pt', 'letter');
+                pdf.fromHTML(
+                    fileContent // HTML string or DOM elem ref.
+                    , margins.left // x coord
+                    , margins.top // y coord
+                    , { 'width': margins.width, 'elementHandlers': specialElementHandlers }
+                    , function (dispose) {
+                      // dispose: object with X, Y of the last line add to the PDF
+                      //          this allow the insertion of new lines after html
+                    pdf.save(fileName+'.pdf');
+                    },
+                    margins
+                );           
+            });
+    
+            $('#btnWord').click(function () {
+               var wordContent = $('.print_content').html();
+               window.open('data:application/msword,' + '\uFEFF' + encodeURIComponent(wordContent));
+            });
+            
+            $('#time_period').change(function(){
+                var filterTime = $('#time_period').val();
+                if(filterTime == 'custom'){
+                    $('#time_period_label').css('display', 'none');
+                    $('#time_period_specific_day').css('display', 'none');
+                    $('#time_period_specific_period').css('display', 'none');
+                    $('#time_period_custom').css('display', 'block');
+                } else if(filterTime == 'specific-period') {
+                    $('#time_period_label').css('display', 'none');
+                    $('#time_period_custom').css('display', 'none');
+                    $('#time_period_specific_day').css('display', 'none');
+                    $('#time_period_specific_period').css('display', 'block');
+                } else {
+                    if(filterTime == 'specific-day') {
+                        $('#time_period_label').css('display', 'none');
+                        $('#time_period_custom').css('display', 'none');
+                        $('#time_period_specific_period').css('display', 'none');
+                        $('#time_period_specific_day').css('display', 'block');
+                    } else {
+                        $('#time_period_label').css('display', 'block');
+                        $('#time_period_specific_day').css('display', 'none');
+                        $('#time_period_specific_period').css('display', 'none');
+                        $('#time_period_custom').css('display', 'none');
+                    }
+                    if($('#report_format').val() == 'graph_report') {
+                        if(filterTile == 'current-hour' || filterTime == 'last-hour' || filterTime == 'last-2-hour' || filterTime == 'last-3-hour' || filterTime == 'last-6-hour' || filterTime == 'last-12-hour' || filterTime == 'today' || filterTime == 'yesterday' || filterTime == 'specific-day') {
+                            $('#report_interval').val('hourly');
+                        } else {
+                            $('#report_interval').val('daily');
+                        }
+                    }
+                }
+                $.ajax({
+                    url: 'report/time_filter',
+                    type: "POST",
+                    data: {filterTime:filterTime},
+                    beforeSend: function(){
+                        loaderSelectVehicle = new ajaxLoader($('#select_vehicle'));
+                    },
+                    success: function(response) {
+                        loaderSelectVehicle.remove();
+    
+                        var obj = $.parseJSON(response);
+                        if(filterTime == 'custom') {
+                            $('#start_time').val(obj.start);
+                            $('#end_time').val(obj.end);
+                        } else if (filterTime == 'specific-day') {
+                            $('#start_time').val(obj.start);
+                            $('#end_time').val(obj.end);
+                            var specificDay = obj.start.split(" ");
+                            $('#specific_day').val(specificDay[0]);
+                        } else if (filterTime == 'specific-period') {
+                            var startDate = obj.start.split(" ");
+                            var endDate = obj.end.split(" ");
+                            $('#start_date').val(startDate[0]);
+                            $('#end_date').val(endDate[0]);
+                        } else {
+                            $('#start_time').val(obj.start);
+                            $('#end_time').val(obj.end);
+                            $('#start_time_label').html(obj.timeStringStart);
+                            $('#end_time_label').html(obj.timeStringEnd);
+                        }
+                        
+                    }
+                });
+            });
+    
+            $('#report_type').change(function(){
+                var reportType = $.trim($('#report_type').val());
+                if(reportType == 'speed_location_distance_report' || reportType == 'trip_report_summary' || reportType == 'daily_distance'){
+                    $('#fuel_consumption').css('display', 'inline');
+                    $('#km_hour').val('km');
+                    $('#km_hour').prop('disabled', true);
+                } else if(reportType == 'start_stop_report'){
+                    $('#fuel_consumption').css('display', 'inline');
+                    $('#km_hour').prop('disabled', false);
+                } else {
+                    $('#km_hour').prop('disabled', true);
+                    $('#fuel_consumption').css('display', 'none');
+                }
+    
+            });
+            
+            $('#report_format').change(function() {
+                var reportFormat = $.trim($('#report_format').val());
+                $.ajax({
+                    url: 'report/get_report_types',
+                    type: "POST",
+                    data: {reportFormat:reportFormat},
+                    beforeSend: function(){
+                        loaderSelectVehicle = new ajaxLoader($('#select_vehicle'));
+                    },
+                    success: function(response) {
+                        loaderSelectVehicle.remove();
+                        if(reportFormat == 'graph_report') {
+                            //$('#fuel_consumption').css('display', 'none');
+                            $('#report_interval_container').css('display', 'inline');
+                        } else {
+                            $('#report_interval_container').css('display', 'none');
+                        }
+                        $('#report_type').html(response);
+                    }
+                });
+            });
+    
+            function isNumber(amount){
+                // var regex = /^\d*\.?\d+$/;
+                // return regex.test(amount);
+            }
+            
+            $('#btnReport').click(function(){
+                /** clear timer for get location **/
+                clearInterval(timer);
+    
+                if($.trim($('#report_type').val()) == 'speed_location_distance_report'){
+                    $('#row-filer-container').show();
+                    $('#row-filer').val('0');
+                } else {
+                    $('#row-filer-container').hide();
+                }
+    
+                var startTime = $.trim($('#start_time').val());
+                var endTime = $.trim($('#end_time').val());
+                var timePeriod = $('#time_period').val();
+                var timePeriodRestrictionFlag = false;
+                
+                if(timePeriod == 'specific-day') {
+                    var specificDate = $.trim($('#specific_day').val());
+                    startTime = specificDate +" "+ "00:00:00";
+                    endTime = specificDate +" "+ "23:59:59";
+                } else if(timePeriod == 'specific-period') {
+                    var startDate = $.trim($('#start_date').val());
+                    var endDate = $.trim($('#end_date').val());
+                    startTime = startDate +" "+ "00:00:00";
+                    endTime = endDate +" "+"23:59:59";
+                }
+                
+                if(timePeriod == 'custom' || timePeriod == 'specific-period') {
+                  var timePeriodStartArray = startTime.split(' ');
+                  var timePeriodStartDate = timePeriodStartArray[0].split('-');
+                  var timePeriodStartMonth = timePeriodStartDate[1];
+                  var timePeriodEndArray = endTime.split(' ');
+                  var timePeriodEndDate = timePeriodEndArray[0].split('-');
+                  var timePeriodEndMonth = timePeriodEndDate[1];
+                  if(timePeriodStartMonth != timePeriodEndMonth) {
+                      timePeriodRestrictionFlag = true;
+                  }
+                }
+                
+                /** get selected vehicle **/
+                var deviceEMEI = $.trim($('#emei_number').val());
+                /** get report type **/
+                var reportType = $.trim($('#report_type').val());
+                if(deviceEMEI == ''){
+                    alert('Please select a vehicle to get report.');
+                    return false;
+                } else if(reportType == ''){
+                    alert('Please select report type to get report.');
+                    return false;
+                } else if(timePeriodRestrictionFlag){
+                    alert('Please select date-time range within same month.');
+                    return false;
+                } else {
+                    var vehicleId = $.trim($('#vehicle_id').val());
+                    
+                    if($.trim($('#report_format').val()) == 'general_report') {
+                        if(reportType == 'daily_distance' || reportType == 'speed_location_distance_report' || reportType == 'trip_report_summary' || reportType == 'start_stop_report' || reportType == 'over_speed_report' || reportType == 'ac_start_stop_report' || reportType == 'raw_data_report'){
+                            if(reportType == 'daily_distance' || reportType == 'speed_location_distance_report' || reportType == 'start_stop_report' || reportType == 'trip_report_summary'){
+                                var fuel = $.trim($('#fuel_amount').val());
+                                var litterGallon = $.trim($('#litter_gallon').val());
+                                var kmHour = $.trim($('#km_hour').val());
+                                if(!isNumber(fuel)){
+                                    alert('Provide correct fuel consumption');
+                                    return false;
+                                }
+    
+                            } else {
+                                var fuel = '';
+                                var litterGallon = '';
+                                var kmHour = '';
+                            }
+                            /** start the ajax loader **/
+                            loaderSelectVehicle = new ajaxLoader($('#select_vehicle'));
+    
+                            $.ajax({
+                                url: '</report'+reportType,
+                                type: "POST",
+                                data: {vehicleId:vehicleId, deviceEMEI:deviceEMEI, startTime:startTime, endTime:endTime, fuel:fuel, litterGallon:litterGallon, kmHour:kmHour},
+                                beforeSend: function(){
+                                    $('.report_container').html('<img src="/assets/img/ajax-loader-fb.gif"/>');
+                                },
+                                success: function(response) {
+                                    $('.report_container').html(response);
+                                    $('.graph_container').html('');
+                                    $('.print-button').css('display', 'block');
+                                    $('#btnPdf').css('display', 'inline');
+                                    /** remove the ajax loader **/
+                                    loaderSelectVehicle.remove();
+                                }
+                            });
+                        } else {
+                            $('.report_container').html('Invalid report type selected');
+                        }
+                    } else {
+                        if(reportType == 'daily_distance') {
+                            var fuel = $.trim($('#fuel_amount').val());
+                            var litterGallon = $.trim($('#litter_gallon').val());
+                            var kmHour = $.trim($('#km_hour').val());
+                            if(!isNumber(fuel)){
+                                alert('Provide correct fuel consumption');
+                                return false;
+                            }
+                        } else {
+                            var fuel = '';
+                            var litterGallon = '';
+                            var kmHour = '';
+                        }
+                        var reportInterval = $.trim($('#report_interval').val());
+                        /** start the ajax loader **/
+                        loaderSelectVehicle = new ajaxLoader($('#select_vehicle'));
+    
+                        $.ajax({
+                            url: 'report'+reportType+'_graph',
+                            type: "POST",
+                            data: {vehicleId:vehicleId, deviceEMEI:deviceEMEI, startTime:startTime, endTime:endTime, fuel:fuel, litterGallon:litterGallon, kmHour:kmHour, reportInterval:reportInterval},
+                            beforeSend: function(){
+                                $('.report_container').html('<img src="assets/img/ajax-loader-fb.gif" />');
+                            },
+                            success: function(response) {
+                                $('.print-button').css('display', 'block');
+                                $('#btnPrint').css('display', 'inline');
+                                $('#btnPdf').css('display', 'none');
+                                var chartHeight = (reportInterval == 'hourly') ? 600 : 800;
+                                var obj = $.parseJSON(response);
+                                
+                                $('.report_container').html(obj.report_header);
+                                
+                                var titleText = obj.graph_title_text;
+                                var yAxisTitleText = obj.yaxis_title_text;
+                                var seriesName1 = obj.series_name_1;
+                                var seriesName2 = obj.series_name_2;
+                                
+                                $('.graph_container').highcharts({
+                                    colors: ['#01AAE6','#FF8C00','#8bbc21','#1aadce'],
+                                    chart: {
+                                        height: chartHeight,
+                                        type: obj.graph_type
+                                    },
+                                    title: {
+                                        text: titleText
+                                    },
+                                    xAxis: {
+                                        categories: (function(){
+                                            var category = [];
+                                            $.each(obj.series_category, function(key, val){
+                                                category.push(val);
+                                            });
+                                            return category;
+                                        }())
+                                    },
+                                    yAxis: {
+                                        title: {
+                                            text: yAxisTitleText
+                                        }
+                                    },
+                                    plotOptions: {
+                                        bar: {
+                                            dataLabels: {
+                                                enabled: true,
+                                                format: '{y} '+obj.series_data_extra_label
+                                            },
+                                            enableMouseTracking: true
+                                        },
+                                        line: {
+                                            dataLabels: {
+                                                enabled: true,
+                                                format: '{y} '+obj.series_data_extra_label
+                                            },
+                                            enableMouseTracking: true
+                                        }
+                                    },
+                                    series: [{
+                                        name: seriesName1,
+                                        data: (function(){
+                                            var data1 = [];
+                                            $.each(obj.series_data_1, function(key, val){
+                                                data1.push(val);
+                                            });
+                                            return data1;
+                                        }())
+                                    }, {
+                                        name: seriesName2,
+                                        data: (function(){
+                                            var data2 = [];
+                                            $.each(obj.series_data_2, function(key, val){
+                                                data2.push(val);
+                                            });
+                                            return data2;
+                                        }())
+                                    }]
+                                });
+                                /** remove the ajax loader **/
+                                loaderSelectVehicle.remove();
+                            }
+                        });
+                    }
+                    
+                }
+            });
+        });
+    
+        /** start report related code**/
+        function getVehicles(ownerId){
+            loaderSelectVehicle = new ajaxLoader($('#select_vehicle'));
+            $.ajax({
+                url: 'report/getVehicles',
+                type: "POST",
+                data: {ownerId:ownerId},
+                beforeSend: function(){
+                },
+                success: function(response) {
+                    $('#vehicle_id').html(response);
+                    loaderSelectVehicle.remove();
+                }
+            });
+        }
+    
+        function getDeviceEMEI(vehicleId){
+            loaderSelectVehicle = new ajaxLoader($('#select_vehicle'));
+            $.ajax({
+                url: 'report/getDeviceEMEI',
+                type: "POST",
+                data: {vehicleId:vehicleId},
+                beforeSend: function(){
+                },
+                success: function(response) {
+                    if(response == 'not-found'){
+                        $('#emei_number').val('');
+                        alert('No device is assigned to this vehicle.');
+                    } else if(response == 'no-selection') {
+                        $('#emei_number').val('');
+                        alert('Please select a vehicle to get reports');
+                    } else {
+                        $('#emei_number').val(response);
+                    }
+    
+                    /** remove ajax loader **/
+                    loaderSelectVehicle.remove();
+                }
+            });
+        }
+    
+    
+        function detailedReport(){
+            var divLocation = $('.report_container').offset();
+            $('html, body').animate({scrollTop: divLocation.top}, "slow");
+    
+            $('.report_container').html('<img src="assets/img/ajax-loader-fb.gif" />');
+        }
+    
+    </script>
+    
+
+
+    <div id="site_content">
+      <div id="content">
+        <div style="margin-left: 5px;">
+        <div class="container_title">Report Search</div>
+        <div class="search_element_container" id="select_vehicle">
+            <div class="form_settings">
+    
+                <div>Consortium :</div>
+                <div style="margin-bottom: 15px;">
+                    <select name="consortium_id" id="consortium_id" style="height: 25px;">
+                        <option value="">-- Select Consortium --</option>
+                        {{range .}}
+                            <option value="todo:consortium id ">{{.}}</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div>Vehicle Owner:</div>
+                <div style="margin-bottom: 15px;">
+                    <select name="vehicle_owner_id" id="vehicle_owner_id" onchange="getVehicles(this.value);" style="height: 25px;">
+                        <option value="">-- Select Owner --</option>
+                            <option value="asdfsa"><asdfasf></option>
+                    </select>
+                </div>
+                <div style="float: left;">
+                    <div>Vehicles:</div>
+                    <div style="margin-bottom: 15px;">
+                        <select name="vehicle_id" id="vehicle_id" onchange="getDeviceEMEI(this.value);" style="height: 25px;">
+                            <option value=""></option>
+                        </select>
+                        <input type="hidden" id="emei_number" name="emei_number" value="" />
+                    </div>
+                </div>
+                <div style="float: left; margin-left: 10px;">
+                    <div>Report Format:</div>
+                    <div style="margin-bottom: 15px;">
+                        <select name="report_format" id="report_format" style="height: 25px;">
+                            <option value="general_report">General Report</option>
+                            <option value="graph_report">Graph Report</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="float: left; margin-left: 10px;">
+                    <div>Report Types:</div>
+                    <div style="margin-bottom: 15px;">
+                        <select name="report_type" id="report_type" style="height: 25px;">
+                            <option value="">--Select--</option>
+                            <option value="daily_distance">Distance Report</option>
+                            <option value="speed_location_distance_report">Trip Report in Details</option>
+                            <option value="trip_report_summary">Trip Report Summary</option>
+                            <option value="start_stop_report">Engine Start/Stop Report</option>
+                            <option value="over_speed_report">Over Speeding Report</option>
+                            <option value="ac_start_stop_report">AC On-OFF Report</option>
+                            <option value="raw_data_report">Raw Data</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="clear: both;"></div>
+                <div style="float: left;">
+                    <div>Time Period:</div>
+                    <div style="margin-bottom: 15px;">
+                        <select name="time_period" id="time_period" style="height: 25px;">
+                        <option value="current-hour">Current Hour</option>
+                        <option value="last-hour">Last Hour</option>
+                        <option value="last-2-hour">Last 2 Hour</option>
+                        <option value="last-3-hour">Last 3 Hour</option>
+                        <option value="last-6-hour">Last 6 Hour</option>
+                        <option value="last-12-hour">Last 12 Hour</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="this-week">This Week</option>
+                        <option value="last-week">Last Week</option>
+                        <option value="this-month">This Month</option>
+                        <option value="last-month">Last Month</option>
+                        <option value="specific-day">Specific Day</option>
+                        <option value="specific-period">Specific Period</option>
+                        <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- <?php
+                    $startTime = date('Y-m-d H:i:s', mktime(date("H"), 0, 0, date("m"), date("d"), date("Y")));
+                    $endTime = date('Y-m-d H:i:s', mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
+                    $timeStringStart = date('Y-m-d h:i:s A', strtotime($startTime));
+                    $timeStringEnd = date('Y-m-d h:i:s A', strtotime($endTime));
+                ?> -->
+                <div id="time_period_label" style="float: left;">
+                    <div style="float: left; margin-left: 10px;">
+                        <div>Start Time:</div>
+                        <div style="margin-bottom: 15px;"><div id="start_time_label" style="border: 1px solid #84bbf3; height: 20px; width: 200px; padding: 2px 0 0 10px;">sadfdsaf</div></div>
+                    </div>
+                    <div style="float: left; margin-left: 10px;">
+                        <div>End Time:</div>
+                        <div style="margin-bottom: 15px;"><div id="end_time_label" style="border: 1px solid #84bbf3; height: 20px; width: 200px; padding: 2px 0 0 10px;">sadfas</div></div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div id="time_period_specific_day" style="display: none; float: left;">
+                    <div style="float: left; margin-left: 10px;">
+                        <div>Select Date:</div>
+                        <div style="margin-bottom: 15px;"><input class="only_date_picker" type="text" name="specific_day" id="specific_day" value="asdfsd" readonly /></div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div id="time_period_specific_period" style="display: none; float: left;">
+                    <div style="float: left; margin-left: 10px;">
+                        <div>Start Date:</div>
+                        <div style="margin-bottom: 15px;"><input class="only_date_picker" type="text" name="start_date" id="start_date" value="ewr" readonly /></div>
+                    </div>
+                    <div style="float: left; margin-left: 10px;">
+                        <div>End Date:</div>
+                        <div style="margin-bottom: 15px;"><input class="only_date_picker" type="text" name="end_date" id="end_date" value="ewdxc" readonly /></div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div id="time_period_custom" style="display: none; float: left;">
+                    <div style="float: left; margin-left: 10px;">
+                        <div>Start Time:</div>
+                        <div style="margin-bottom: 15px;"><input class="date_picker" type="text" name="start_time" id="start_time" value="ewddfsf" readonly /></div>
+                    </div>
+                    <div style="float: left; margin-left: 10px;">
+                        <div>End Time:</div>
+                        <div style="margin-bottom: 15px;"><input class="date_picker" type="text" name="end_time" id="end_time" value="asdfdsf" readonly /></div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div id="report_interval_container" style="float: left; margin-left: 10px; display: none;">
+                    <div>Report Interval:</div>
+                    <div style="margin-bottom: 15px;">
+                        <select name="report_interval" id="report_interval" style="height: 25px;">
+                            <option value="hourly">HOURLY</option>
+                            <option value="daily">DAILY</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="clear: both;"></div>
+                <div id="fuel_consumption" style="display: none; float: left;">
+                    <div style="float: left;">
+                        <div>Fuel Consumption:</div>
+                        <div style="margin-bottom: 15px;"><input type="text" name="fuel_amount" id="fuel_amount" value="0.2" style="border: 1px solid #84bbf3; height: 20px; width: 200px; padding: 2px 0 0 10px;" /></div>
+                    </div>
+                    <div style="float: left; margin-left: 10px;">
+                        <div>&nbsp;</div>
+                        <div style="margin-bottom: 15px;">
+                            <select name="litter_gallon" id="litter_gallon" style="height: 25px;">
+                                <option value="Liter">Liter</option>
+                                <option value="Gallon">Gallon</option>
+                                <option value="CFT">CNG Unit(CFT)</option>
+                                <option value="TK">TK</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="float: left; margin-left: 10px;">
+                        <div>&nbsp;</div>
+                        <div style="margin-bottom: 15px;">
+                            <select name="km_hour" id="km_hour" style="height: 25px;">
+                                <option value="km">/Km</option>
+                                <option value="hour">/Hour</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div style="clear: both;"></div>
+                <div>
+                    <div style="margin-bottom: 15px; text-align: right;">
+                        <input class="action_button" type="button" id="btnReport" name="btnReport" value="Generate Report" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="container_title">Report Result</div>
+    <div class="search_element_container">
+        <div class="print-button" align="right" style="display: none;">
+            <div id="row-filer-container">Records Interval: <select name="row-filer" id="row-filer" style="height: 25px;">
+                <option value="0">--All--</option>
+                <option value="4">30 Second(s)</option>
+                <option value="8">1 Minute(s)</option>
+                <option value="16">2 Minute(s)</option>
+                <option value="24">3 Minute(s)</option>
+                <option value="32">4 Minute(s)</option>
+                <option value="40">5 Minute(s)</option>
+                <option value="48">6 Minute(s)</option>
+                <option value="56">7 Minute(s)</option>
+                <option value="64">8 Minute(s)</option>
+                <option value="72">9 Minute(s)</option>
+                <option value="80">10 Minute(s)</option>
+            </select></div>
+            <input class="action_button" type="button" id="btnPdf" name="btnPdf" value="Save as PDF" />
+            <input class="action_button" type="button" id="btnWord" name="btnWord" value="Save as Word" />
+            <input class="action_button" type="button" id="btnPrint" name="btnPrint" value="Print Report" />
+        </div>
+        <div class="print_content">
+            <div class="report_container"></div>
+            <div class="graph_container"></div>
+        </div>
+    </div>
+    <!-- <?php if($this->session->userdata('userType') == 'CLIENT' || $this->session->userdata('userType') == 'SUB_CLIENT'){ ?>
+    <script>
+        getVehicles(<?php echo $this->session->userdata('userId')?>);
+    </script>
+    <?php } ?> -->
+    <div>
+        <form name="save-pdf" id="save-pdf" action="ewr>" method="post">
+            <input type="hidden" name="file-name" id="file-name" value="" />
+            <input type="hidden" name="file-content" id="file-content" value="" />
+        </form>
+    </div>
+      </div>
+    </div>
+    <div id="footer">
+      Copyright &copy; GEON Technologies Ltd.
+    </div>
+  </body>
+</html>

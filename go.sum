@@ -1,0 +1,6 @@
+github.com/afzal-khan-89/vts-web v0.0.0-20210521084923-04f6326da82f h1:sGm95URvBYiGpCpPbe0Im9o7OLWUkEBKbM2raNaFvz8=
+github.com/afzal-khan-89/vts-web v0.0.0-20210521084923-04f6326da82f/go.mod h1:A5XGubpSFOcgM4kTtRFkFgDlY03lbjUdYfSoHmqphg0=
+github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
+github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
+github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
+github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
